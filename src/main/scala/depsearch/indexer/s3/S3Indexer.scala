@@ -13,19 +13,15 @@ import S3Lister._
 import depsearch.indexer.IvyDependencyParser
 import depsearch.db.DependencyDB
 import depsearch.common.model.Dependency
+import depsearch.db.mongo.MongoDependencyDB
+import java.io.InputStream
 
-class S3Indexer {
+class S3Indexer(db: DependencyDB) {
   val s3: AmazonS3 = new AmazonS3Client
   val executor = Executors.newFixedThreadPool(5)
   
-  val db = new DependencyDB() {
-    def update(d: Dependency): Unit = {
-      println(d)
-    }
-  }
-  
-  def index(bucket: String) {
-    val r = new ListObjectsRequest().withBucketName(bucket)
+  def index(bucket: String, prefix: Option[String] = None) {
+    val r = new ListObjectsRequest().withBucketName(bucket).withPrefix(prefix.getOrElse(null))
     
     s3.listBatch(r) { list =>
       list.grouped(100) foreach { g =>
@@ -42,11 +38,15 @@ class S3Indexer {
     
     val ivyFilePattern = """.*/ivy-[^/]+.xml$""".r
     
+    private def getObject(o: S3ObjectSummary): InputStream = {
+      val obj = s3.getObject(new GetObjectRequest(o.getBucketName, o.getKey))
+      return obj.getObjectContent
+    }
+    
     def call(): Boolean = {
       for (elem <- list) {
         if (ivyFilePattern.findFirstIn(elem.getKey()).isDefined) {
-          val obj = s3.getObject(new GetObjectRequest(elem.getBucketName(), elem.getKey()))
-          val in = obj.getObjectContent()
+          val in = getObject(elem)
           
           try {
             db.update(parser.parse(in))
@@ -58,7 +58,6 @@ class S3Indexer {
             }
           } finally {
             in.close()
-            obj.close()
           }
         }
       }
@@ -72,6 +71,11 @@ class S3Indexer {
 
 object S3Indexer {
   def main(args: Array[String]) {
-    new S3Indexer().index(args(0))
+    val db = MongoDependencyDB()
+
+    val bucket = args(0)
+    val prefix = if (args.length > 1) Some(args(1)) else None
+
+    new S3Indexer(db).index(bucket, prefix)
   }
 }

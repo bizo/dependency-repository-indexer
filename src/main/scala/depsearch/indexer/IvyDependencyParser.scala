@@ -40,12 +40,24 @@ class IvyDependencyParser extends DependencyParser {
     
     val org = info \ "@organisation" text
     val group = info \ "@module" text
-    val publication = (info \ "@publication" text) toLong
+    val publication = {
+      val p = info \ "@publication"
+      
+      if (p.isEmpty) {
+        None
+      } else {
+        Some((p text) toLong)
+      }
+    }
     
     val artifacts = module \ "publications" \ "artifact" map { a =>
       Artifact(a \ "@name" text, a \ "@type" text, a \ "@ext" text)
     }
     
-    Dependency(org, group, version, publication, artifacts, description, license)
+    val deps = module \ "dependencies" \ "dependency" map { d =>
+      ShortDependency(d \ "@org" text, d \ "@name" text, d \ "@rev" text)
+    }
+    
+    Dependency(org, group, version, publication, artifacts, description, license, deps)
   }
 }
