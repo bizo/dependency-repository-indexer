@@ -1,6 +1,6 @@
 # dependency-repository-indexer
 
-[![Build Status](https://drone.io/github.com/ogrodnek/dependency-repository-indexer/status.png)](https://drone.io/github.com/ogrodnek/dependency-repository-indexer/latest)
+[![Build Status](https://travis-ci.org/ogrodnek/dependency-repository-indexer.svg?branch=master)](https://travis-ci.org/ogrodnek/dependency-repository-indexer)
 
 
 This is an open source re-implementation of a previous [dependency search project](http://dev.bizo.com/2010/05/hackday-dependency-searching-using.html).
