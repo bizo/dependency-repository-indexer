@@ -16,8 +16,9 @@ case class Dependency(
 case class ShortDependency(
   org: String,
   group: String,
-  rev: String
-)  
+  rev: String,
+  conf: Option[String]
+)
 
 case class DependencyResult(
   dependency: Dependency,
