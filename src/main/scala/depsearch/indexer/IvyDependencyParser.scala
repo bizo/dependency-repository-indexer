@@ -55,7 +55,13 @@ class IvyDependencyParser extends DependencyParser {
     }
     
     val deps = module \ "dependencies" \ "dependency" map { d =>
-      ShortDependency(d \ "@org" text, d \ "@name" text, d \ "@rev" text)
+      val conf = {
+        val c = d \ "@conf"
+        
+        if (c.isEmpty) None else Some((c text))
+      }      
+      
+      ShortDependency(d \ "@org" text, d \ "@name" text, d \ "@rev" text, conf)
     }
     
     Dependency(org, group, version, publication, artifacts, description, license, deps)

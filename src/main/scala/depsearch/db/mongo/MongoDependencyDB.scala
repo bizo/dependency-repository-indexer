@@ -94,7 +94,8 @@ class MongoDependencyDB(db: DB) extends DependencyDB {
   
   private def toShortDependency(deps: DBObject): Seq[ShortDependency] = {
      asListOfObjects(deps).map { o =>
-       ShortDependency(o.get("org").toString, o.get("group").toString, o.get("rev").toString)
+       val c = Option(o.get("conf")).map(_.toString)
+       ShortDependency(o.get("org").toString, o.get("group").toString, o.get("rev").toString, c)
      }
   }
   
