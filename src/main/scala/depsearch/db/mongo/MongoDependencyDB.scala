@@ -11,6 +11,7 @@ import com.mongodb.Mongo
 import com.mongodb.MongoClient
 import com.mongodb.DBObject
 import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.HashSet
 
 class MongoDependencyDB(db: DB) extends DependencyDB {
   val versionParser = new VersionParser()
@@ -50,6 +51,29 @@ class MongoDependencyDB(db: DB) extends DependencyDB {
     Some(DependencyResult(latest, versions))
   }
   
+  override def downstream(org: String, group: String): Seq[DependencyGroup] = {
+    val q = new BasicDBObject
+    
+    val d = new BasicDBObject()
+    d.put("org", org)
+    d.put("group", group)
+    
+    val e = new BasicDBObject()
+    e.put("$elemMatch", d)
+    
+    q.put("dependencies", e)
+    
+    val cur = db.getCollection("repo_v2").find(q)
+    
+    val ret = new HashSet[DependencyGroup]
+    
+    for (dep <- cur.toArray().asScala.map(toDependency)) {
+      ret.add(new DependencyGroup(dep.org, dep.group))
+    }
+    
+    ret.toVector.sortBy { d => d.org + ":" + d.group }
+  }
+  
   private def toDependency(d: DBObject): Dependency = {
     Dependency(
       d.get("org").toString,
@@ -59,7 +83,7 @@ class MongoDependencyDB(db: DB) extends DependencyDB {
       toArtifacts(dbo(d.get("artifacts"))),
       toDescription(dbo(d.get("description"))),
       toLicense(dbo(d.get("license"))),
-      toShortDependency(dbo(d.get("dependencies"))))
+      toShortDependencies(dbo(d.get("dependencies"))))
   }
   
   private def toDescription(d: DBObject): Option[Description] = {
@@ -92,11 +116,13 @@ class MongoDependencyDB(db: DB) extends DependencyDB {
      }
   }
   
-  private def toShortDependency(deps: DBObject): Seq[ShortDependency] = {
-     asListOfObjects(deps).map { o =>
-       val c = Option(o.get("conf")).map(_.toString)
-       ShortDependency(o.get("org").toString, o.get("group").toString, o.get("rev").toString, c)
-     }
+  private def toShortDependencies(deps: DBObject): Seq[ShortDependency] = {
+     asListOfObjects(deps).map { toShortDependency }
+  }  
+  
+  private def toShortDependency(o: DBObject): ShortDependency = {
+    val c = Option(o.get("conf")).map(_.toString)
+    ShortDependency(o.get("org").toString, o.get("group").toString, o.get("rev").toString, c)
   }
   
   private def asListOfObjects(d: DBObject): Seq[DBObject] = {
