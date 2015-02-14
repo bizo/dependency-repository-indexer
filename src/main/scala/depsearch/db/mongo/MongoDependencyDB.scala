@@ -223,7 +223,8 @@ class MongoDependencyDB(db: DB) extends DependencyDB {
 
 object MongoDependencyDB {
   def apply(): MongoDependencyDB = {
-    val db = new MongoClient("127.0.0.1", 27017).getDB("repo")
+    val host = Option(System.getenv("DB_PORT_27017_TCP_ADDR")).getOrElse("127.0.0.1")
+    val db = new MongoClient(host, 27017).getDB("repo")
     
     new MongoDependencyDB(db)
   }
