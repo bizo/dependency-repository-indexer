@@ -36,6 +36,10 @@ class CachedDependencyDB(db: DependencyDB) extends DependencyDB {
     downstreamCache.get(DependencyGroup(org, group))
   }
   
+  override def recentlyPublished(limit: Int): Seq[Dependency] = {
+    db.recentlyPublished(limit)
+  }
+  
   override def stats(): IndexStats = db.stats
   override def setLastUpdated(when: java.util.Date) = db.setLastUpdated(when)
 }

@@ -8,6 +8,8 @@ trait DependencyDB {
   def dependency(org: String, group: String, numVersions: Int): Option[DependencyResult]
   def downstream(org: String, group: String): Seq[DependencyGroup]
   
+  def recentlyPublished(limit: Int): Seq[Dependency]
+  
   def stats(): IndexStats
   def setLastUpdated(when: java.util.Date)
 }

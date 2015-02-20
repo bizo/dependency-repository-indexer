@@ -98,6 +98,15 @@ class MongoDependencyDB(db: DB) extends DependencyDB {
     )
   }
   
+  override def recentlyPublished(limit: Int): Seq[Dependency] = {
+    val cur = db.getCollection("repo_v2").find()
+    cur.sort(new BasicDBObject("publication", -1))
+    
+    val results = cur.limit(limit).toArray().asScala
+    
+    results.map { toDependency }
+  }
+
   override def setLastUpdated(when: java.util.Date) {
     val col = db.getCollection("repo_v2_meta")
     
