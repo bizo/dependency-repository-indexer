@@ -12,6 +12,7 @@ import com.mongodb.MongoClient
 import com.mongodb.DBObject
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.HashSet
+import com.mongodb.WriteConcern
 
 class MongoDependencyDB(db: DB) extends DependencyDB {
   val versionParser = new VersionParser()
@@ -74,6 +75,45 @@ class MongoDependencyDB(db: DB) extends DependencyDB {
     ret.toVector.sortBy { d => d.org + ":" + d.group }
   }
   
+  override def stats(): IndexStats = {
+    
+    val repo = db.getCollection("repo_v2")
+    
+    val numDeps = repo.count()
+    val numOrgs = repo.distinct("org").size
+    
+    val lastUpdated = {
+      val cur = db.getCollection("repo_v2_meta").find()
+      if (cur.hasNext()) {
+        val d = cur.next().get("last_updated").asInstanceOf[Long]
+        Some(new java.util.Date(d))
+      } else {
+        None
+      }
+    }
+    
+    new IndexStats(
+      repo.count(),
+      repo.distinct("org").size,
+      repo.distinct("group").size,
+      lastUpdated
+    )
+  }
+  
+  override def setLastUpdated(when: java.util.Date) {
+    val col = db.getCollection("repo_v2_meta")
+    
+    val o = new BasicDBObject
+    o.put("_id", 0)
+    o.put("last_updated", when.getTime)
+    
+    val q = new BasicDBObject
+    o.put("_id", 0)
+    
+    col.update(q, o, true, false, WriteConcern.NORMAL) 
+  }
+
+
   private def toDependency(d: DBObject): Dependency = {
     Dependency(
       d.get("org").toString,
@@ -192,7 +232,7 @@ class MongoDependencyDB(db: DB) extends DependencyDB {
       o.put("name", a.name)
       o.put("type", a.aType)
       o.put("ext", a.ext)
-      
+            
       o
     }
     
@@ -202,6 +242,8 @@ class MongoDependencyDB(db: DB) extends DependencyDB {
       o.put("org", d.org)      
       o.put("group", d.group)
       o.put("rev", d.rev)
+      
+      for (c <- d.conf) { o.put("conf", c) }
       
       o
     }

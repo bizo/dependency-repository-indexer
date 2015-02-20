@@ -31,6 +31,7 @@ class S3Indexer(db: DependencyDB) {
     
     executor.shutdown()
     executor.awaitTermination(10, TimeUnit.MINUTES)
+    db.setLastUpdated(new java.util.Date)
   }
   
   class IndexWorker(s3: AmazonS3, db: DependencyDB, list: Iterable[S3ObjectSummary]) extends Callable[Boolean] {

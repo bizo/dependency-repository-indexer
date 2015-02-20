@@ -57,3 +57,11 @@ case class Description(
   text: String,
   homepage: String
 )
+
+
+case class IndexStats(
+  numberOfDependencies: Long,
+  numberOfOrgs: Long,
+  numberOfGroups: Long,
+  lastUpdated: Option[java.util.Date]
+)
