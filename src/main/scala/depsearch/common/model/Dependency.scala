@@ -4,7 +4,7 @@ case class Dependency(
   org: String,
   group: String,
   version: Version,
-  publication: Option[Long],
+  publication: Option[java.util.Date],
   artifacts: Seq[Artifact],
   description: Option[Description],
   license: Option[License],
@@ -22,7 +22,7 @@ case class ShortDependency(
 
 case class DependencyResult(
   dependency: Dependency,
-  versions: Seq[Version]
+  versions: Seq[Dependency]
 )  
 
 case class DependencyGroup(

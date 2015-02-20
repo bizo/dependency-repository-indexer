@@ -45,9 +45,7 @@ class MongoDependencyDB(db: DB) extends DependencyDB {
     
     val latest = toDependency(results(0))
     
-    val versions = results.map { d =>
-      toDependency(d).version
-    }
+    val versions = results.map { toDependency }
    
     Some(DependencyResult(latest, versions))
   }
@@ -142,9 +140,9 @@ class MongoDependencyDB(db: DB) extends DependencyDB {
     }
   }  
   
-  private def toPublication(o: Object): Option[Long] = {
+  private def toPublication(o: Object): Option[java.util.Date] = {
      if (o != null) {
-      Some(o.asInstanceOf[Long])
+      Some(new java.util.Date(o.asInstanceOf[Long]))
     } else {
       None
     }
@@ -186,7 +184,7 @@ class MongoDependencyDB(db: DB) extends DependencyDB {
     o.put("group", d.group)
     
     for (pub <- d.publication) {
-      o.put("publication", pub)
+      o.put("publication", pub.getTime)
     }
 
     val version = {

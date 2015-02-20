@@ -3,6 +3,7 @@ package depsearch.indexer
 import java.io.InputStream
 import scala.xml.XML
 import depsearch.common.model._
+import java.text.SimpleDateFormat
 
 class IvyDependencyParser extends DependencyParser {
   def parse(in: InputStream): Dependency = {
@@ -46,7 +47,8 @@ class IvyDependencyParser extends DependencyParser {
       if (p.isEmpty) {
         None
       } else {
-        Some((p text) toLong)
+        val df = new SimpleDateFormat("yyyyMMddHHmmss")
+        Some(df.parse(p text))
       }
     }
     
