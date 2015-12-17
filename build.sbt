@@ -2,7 +2,7 @@ organization := "com.bizo"
 
 name := "dependency-repository-indexer"
 
-version := "0.0.2.4"
+version := "0.0.3"
 
 scalaVersion := "2.10.6"
 
