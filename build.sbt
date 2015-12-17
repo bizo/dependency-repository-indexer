@@ -4,7 +4,7 @@ name := "dependency-repository-indexer"
 
 version := "0.0.2.4"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.6"
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-language:_")
 
